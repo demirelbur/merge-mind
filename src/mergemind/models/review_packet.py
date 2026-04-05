@@ -7,7 +7,7 @@ from mergemind.models.domain import PBI, PullRequest
 
 class RetrievedChunk(BaseModel):
     source_type: Literal["pbi", "pr", "doc", "code"] = Field(
-        ..., description="Type of source, e.g., 'pbi', 'pr', 'doc', 'code'."
+        ..., description="Type of source"
     )
     source_id: str = Field(
         ...,

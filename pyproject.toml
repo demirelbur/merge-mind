@@ -19,6 +19,7 @@ dependencies = [
     "pgvector",
     "tenacity",
     "rich",
+    "python-dotenv>=1.2.2",
 ]
 
 [dependency-groups]

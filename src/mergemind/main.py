@@ -1,7 +1,10 @@
+from dotenv import load_dotenv
 from fastapi import FastAPI
 
 from mergemind.api.routes_health import router as health_router
 from mergemind.api.routes_reviews import router as reviews_router
+
+load_dotenv()  # Load environment variables from .env file
 
 app = FastAPI(
     title="MergeMind API",
