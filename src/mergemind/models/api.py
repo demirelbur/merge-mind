@@ -63,6 +63,10 @@ class RunReviewResponse(BaseModel):
         examples=["pending", "completed"],
     )
     report: ReviewReport = Field(..., description="Structured review report")
+    warnings: list[str] = Field(
+        default_factory=list,
+        description="Non-fatal warnings produced during workflow validation",
+    )
 
 
 class HealthResponse(BaseModel):

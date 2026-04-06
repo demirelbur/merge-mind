@@ -1,11 +1,11 @@
 from mergemind.models.api import RunReviewRequest
 from mergemind.models.domain import PBI, ChangedFile, PullRequest
-from mergemind.models.review_packet import RetrievedChunk, ReviewPacket
+from mergemind.models.review_packet import RetrievedChunk
 
 
 class MockPacketBuilder:
-    def build(self, request: RunReviewRequest) -> ReviewPacket:
-        pr = PullRequest(
+    def build_pr(self, request: RunReviewRequest) -> PullRequest:
+        return PullRequest(
             id=request.pr_number or 0,
             title="Add input validation to user registration endpoint",
             body=(
@@ -43,27 +43,28 @@ class MockPacketBuilder:
             ],
         )
 
-        pbi = (
-            PBI(
-                id=request.pbi_id,
-                title="Validate registration payload before persistence",
-                description=(
-                    "As a platform engineer, I want the registration endpoint to validate "
-                    "incoming payloads before user creation so that invalid data is rejected "
-                    "early and does not reach the persistence layer."
-                ),
-                acceptance_criteria=[
-                    "Reject requests with missing email.",
-                    "Reject requests with missing password.",
-                    "Return HTTP 400 for invalid payloads.",
-                    "Add automated tests for validation failures.",
-                ],
-            )
-            if request.pbi_id
-            else None
+    def build_pbi(self, request: RunReviewRequest) -> PBI | None:
+        if not request.pbi_id:
+            return None
+
+        return PBI(
+            id=request.pbi_id,
+            title="Validate registration payload before persistence",
+            description=(
+                "As a platform engineer, I want the registration endpoint to validate "
+                "incoming payloads before user creation so that invalid data is rejected "
+                "early and does not reach the persistence layer."
+            ),
+            acceptance_criteria=[
+                "Reject requests with missing email.",
+                "Reject requests with missing password.",
+                "Return HTTP 400 for invalid payloads.",
+                "Add automated tests for validation failures.",
+            ],
         )
 
-        chunks = [
+    def build_retrieved_chunks(self) -> list[RetrievedChunk]:
+        return [
             RetrievedChunk(
                 source_type="doc",
                 source_id="api-guidelines",
@@ -98,9 +99,3 @@ class MockPacketBuilder:
                 score=0.82,
             ),
         ]
-
-        return ReviewPacket(
-            pr=pr,
-            pbi=pbi,
-            retrieved_chunks=chunks,
-        )

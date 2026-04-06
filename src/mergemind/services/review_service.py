@@ -1,17 +1,16 @@
 from uuid import uuid4
 
-from mergemind.agents.reviewer import run_review_agent
+from mergemind.graph.review_graph import BuildPrNode, review_graph
 from mergemind.models.api import RunReviewRequest, RunReviewResponse
-from mergemind.retrieval.mock_packet_builder import MockPacketBuilder
+from mergemind.models.state import ReviewState
 
 
 class ReviewService:
-    def __init__(self, packet_builder: MockPacketBuilder | None = None) -> None:
-        self.packet_builder = packet_builder or MockPacketBuilder()
-
     async def run_review(self, request: RunReviewRequest) -> RunReviewResponse:
-        packet = self.packet_builder.build(request)
-        report = await run_review_agent(packet)
+        state = ReviewState(request=request)
+
+        graph_run_result = await review_graph.run(BuildPrNode(), state=state)
+        report = graph_run_result.output
 
         print(f"Generated review report: {report}")
 
@@ -19,4 +18,5 @@ class ReviewService:
             review_id=f"rev_{uuid4().hex[:8]}",
             status="completed",
             report=report,
+            warnings=state.warnings,
         )
