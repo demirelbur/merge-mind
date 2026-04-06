@@ -17,7 +17,7 @@ class RunReviewRequest(BaseModel):
     )
     pr_url: HttpUrl | None = Field(
         default=None,
-        description="Full pull request URL as an alternative to repo and pr_number",
+        description="Full pull request URL as an alternative to pr_number",
         examples=["https://github.com/openai/example-repo/pull/42"],
     )
     pbi_id: str | None = Field(
@@ -51,6 +51,11 @@ class RunReviewRequest(BaseModel):
     }
 
 
+class ReviewTraceItem(BaseModel):
+    step: str = Field(..., description="Description of the workflow step")
+    detail: str = Field(..., description="Human-readable details about the step")
+
+
 class RunReviewResponse(BaseModel):
     review_id: str = Field(
         ...,
@@ -66,6 +71,14 @@ class RunReviewResponse(BaseModel):
     warnings: list[str] = Field(
         default_factory=list,
         description="Non-fatal warnings produced during workflow validation",
+    )
+    repair_attempts: int = Field(
+        default=0,
+        description="Number of repair attempts applied to the generated review report",
+    )
+    trace: list[ReviewTraceItem] = Field(
+        default_factory=list,
+        description="Lightweight execution trace for debugging and transparency",
     )
 
 

@@ -12,6 +12,33 @@ from mergemind.models.state import ReviewState
 from mergemind.retrieval.mock_packet_builder import MockPacketBuilder
 
 
+def _text_indicates_implementation(report: ReviewReport, criterion: str) -> bool:
+    texts: list[str] = [report.pr_summary]
+
+    texts.extend(issue.description for issue in report.risks)
+    texts.extend(comment.comment for comment in report.suggested_comments)
+
+    combined = " ".join(texts).lower()
+
+    keywords = [
+        word
+        for word in criterion.lower().replace(".", "").split()
+        if word not in {"the", "a", "an", "with", "for", "and", "or", "to"}
+    ]
+
+    mentions_criterion = any(word in combined for word in keywords)
+
+    testing_signals = [
+        "test",
+        "coverage",
+        "untested",
+        "missing test",
+    ]
+    mentions_testing = any(signal in combined for signal in testing_signals)
+
+    return mentions_criterion and mentions_testing
+
+
 @dataclass
 class BuildPrNode(BaseNode[ReviewState, None, ReviewReport]):
     async def run(self, ctx: GraphRunContext[ReviewState, None]) -> ResolvePbiNode:
@@ -91,7 +118,26 @@ class ValidateReportNode(BaseNode[ReviewState, None, ReviewReport]):
                 "confidence is very high despite limited supporting evidence"
             )
 
-        if ctx.state.warnings and ctx.state.repair_attempts < 1:
+        for criterion in report.missing_acceptance_criteria:
+            if _text_indicates_implementation(report, criterion):
+                ctx.state.warnings.append(
+                    f"'{criterion}' is marked missing, but report text suggests it is implemented and only lacks testing"
+                )
+
+        covered_testing_criterion = any(
+            "test" in criterion.lower()
+            for criterion in report.covered_acceptance_criteria
+        )
+
+        if report.missing_tests and covered_testing_criterion:
+            ctx.state.warnings.append(
+                "testing acceptance criteria are marked covered, "
+                "but the report also lists missing tests"
+            )
+
+        if (
+            ctx.state.warnings and ctx.state.repair_attempts < 3
+        ):  # HARDCODED MAX REPAIR ATTEMPTS
             return RepairReportNode()
 
         return End(report)

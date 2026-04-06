@@ -1,11 +1,24 @@
-# MergeMind
+# MergeMind: Agentic PR Review System
 
-## Pydantic Models
+## 🚀 Project Goal
 
-- agent input/output
-- graph state
-- API responses
-- DB schema
+Build a **typed Agentic RAG system** for software development workflows that:
+
+- Takes a **Pull Request (PR)** and its related **Product Backlog Item (PBI)**
+- Retrieves relevant context from code, documentation, and historical PRs
+- Produces a **structured review report** with:
+  - Requirement alignment
+  - Risks
+  - Missing tests
+  - Suggested review comments
+
+---
+
+## 🧠 One-Sentence Vision
+
+> A developer submits a PR, the system links it to the PBI, gathers relevant evidence, reasons over it, and produces a trustworthy, structured review with traceable justification.
+
+---
 
 ## Tree Structure
 
@@ -51,6 +64,7 @@ merge-mind/
 │       # Agents (PydanticAI)
 │       ├── agents/
 │       │   ├── reviewer.py
+│       │   ├── repairer.py
 │       │   └── prompts.py
 │
 │       # Graph workflow (Pydantic Graph)

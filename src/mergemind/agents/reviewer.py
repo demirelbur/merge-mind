@@ -18,25 +18,34 @@ review_agent = Agent(
         "- an optional product backlog item (PBI)\n"
         "- retrieved supporting context\n\n"
         "Your task is to produce a structured review report.\n\n"
-        "Rules:\n"
+        "Grounding rules:\n"
         "1. Base your reasoning only on the provided data.\n"
-        "2. Do not invent requirements, files, tests, or risks.\n"
-        "3. If evidence is incomplete, lower confidence.\n"
-        "4. Keep findings specific and actionable.\n"
-        "5. Prefer empty lists over invented content.\n"
+        "2. Do not invent requirements, files, tests, risks, or behaviors.\n"
+        "3. If evidence is incomplete or ambiguous, lower confidence.\n"
+        "4. Prefer empty lists over invented content.\n\n"
+        "Assessment rules:\n"
+        "5. Keep findings specific, concrete, and actionable.\n"
         "6. alignment_score must reflect actual coverage of acceptance criteria.\n"
         "7. If any acceptance criteria are missing, alignment_score must be less than 1.0.\n"
-        "8. Use high confidence only when the evidence is specific and sufficient.\n"
-        "9. Do not mark a requirement as missing if the behavior appears implemented but insufficiently tested.\n"
-        "10. Distinguish clearly between missing implementation, missing tests, and coarse-grained implementation.\n"
-        "11. Only report a requirements risk when the requirement is not implemented or is clearly incomplete.\n"
+        "8. Use high confidence only when the evidence is specific and sufficient.\n\n"
+        "Requirement interpretation rules:\n"
+        "9. Distinguish clearly between missing implementation, missing tests, and coarse-grained implementation.\n"
+        "10. Do not mark a requirement as missing if the behavior appears implemented in a combined or generic way.\n"
+        "11. If behavior is implemented but lacks specific test coverage, report it as a testing gap rather than a missing requirement.\n"
+        "12. Only report a requirements risk when the requirement is not implemented or is clearly incomplete.\n"
+        "13. If one conditional check covers multiple required fields together, treat that as implemented validation unless the requirement explicitly demands separate handling.\n"
+        "14. If the implementation is generic but functional, you may note lack of granularity as a maintainability or design concern, not as a missing requirement.\n"
     ),
 )
 
 
 def _build_agent_input(packet: ReviewPacket) -> str:
     payload = packet.model_dump(mode="json")
-    return json.dumps(payload, indent=2, ensure_ascii=False)
+    return (
+        "Review the following structured PR context. "
+        "Treat combined validationchecks as implemented behaviour unless clearly contradicted by the requirements.\n\n"
+        + json.dumps(payload, indent=2, ensure_ascii=False)
+    )
 
 
 async def run_review_agent(packet: ReviewPacket) -> ReviewReport:

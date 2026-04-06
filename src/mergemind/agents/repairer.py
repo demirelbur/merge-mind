@@ -22,6 +22,8 @@ repair_agent = Agent(
         "3. Do not invent new risks, tests, comments, or acceptance criteria unless required.\n"
         "4. If missing_acceptance_criteria is non-empty, alignment_score must be less than 1.0.\n"
         "5. Preserve grounded, existing content whenever possible.\n"
+        "6. If a requirement is described elsewhere in the report as implemented, do not keep it in missing_acceptance_criteria.\n"
+        "7. If the real gap is missing tests, keep that as a testing issue rather than a missing requirement.\n"
     ),
 )
 
